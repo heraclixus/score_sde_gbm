@@ -1,0 +1,58 @@
+nohup: ignoring input
+2024-10-20 18:35:12.121396: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+2024-10-20 18:35:19.232734: W tensorflow/core/common_runtime/gpu/gpu_device.cc:1956] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
+Skipping registering GPU devices...
+W1020 18:35:20.448233 139931231245440 utils.py:10] No checkpoint found at ./checkpoints-meta/checkpoint.pth. Returned the same state as input
+I1020 18:35:20.461837 139931231245440 xla_bridge.py:889] Unable to initialize backend 'cuda': 
+I1020 18:35:20.461991 139931231245440 xla_bridge.py:889] Unable to initialize backend 'rocm': module 'jaxlib.xla_extension' has no attribute 'GpuAllocatorConfig'
+I1020 18:35:20.462800 139931231245440 xla_bridge.py:889] Unable to initialize backend 'tpu': INTERNAL: Failed to open libtpu.so: libtpu.so: cannot open shared object file: No such file or directory
+W1020 18:35:20.463041 139931231245440 xla_bridge.py:936] An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+I1020 18:35:21.421815 139931231245440 dataset_info.py:617] Load dataset info from /home/fredxu/tensorflow_datasets/cifar10/3.0.2
+I1020 18:35:21.428974 139931231245440 dataset_info.py:709] For 'cifar10/3.0.2': fields info.[splits, supervised_keys, module_name] differ on disk and in the code. Keeping the one from code.
+W1020 18:35:21.429390 139931231245440 options.py:599] options.experimental_threading is deprecated. Use options.threading instead.
+W1020 18:35:21.429607 139931231245440 options.py:599] options.experimental_threading is deprecated. Use options.threading instead.
+I1020 18:35:21.429924 139931231245440 dataset_builder.py:579] Reusing dataset cifar10 (/home/fredxu/tensorflow_datasets/cifar10/3.0.2)
+I1020 18:35:21.431347 139931231245440 reader.py:261] Creating a tf.data.Dataset reading 1 files located in folders: /home/fredxu/tensorflow_datasets/cifar10/3.0.2.
+I1020 18:35:21.564606 139931231245440 logging_logger.py:49] Constructing tf.data.Dataset cifar10 for split train, from /home/fredxu/tensorflow_datasets/cifar10/3.0.2
+W1020 18:35:21.713483 139931231245440 options.py:599] options.experimental_threading is deprecated. Use options.threading instead.
+W1020 18:35:21.713625 139931231245440 options.py:599] options.experimental_threading is deprecated. Use options.threading instead.
+I1020 18:35:21.713843 139931231245440 dataset_builder.py:579] Reusing dataset cifar10 (/home/fredxu/tensorflow_datasets/cifar10/3.0.2)
+I1020 18:35:21.714482 139931231245440 reader.py:261] Creating a tf.data.Dataset reading 1 files located in folders: /home/fredxu/tensorflow_datasets/cifar10/3.0.2.
+I1020 18:35:21.755632 139931231245440 logging_logger.py:49] Constructing tf.data.Dataset cifar10 for split test, from /home/fredxu/tensorflow_datasets/cifar10/3.0.2
+I1020 18:35:22.099237 139931231245440 run_lib.py:130] Starting training loop at step 0.
+I1020 18:35:23.498515 139931231245440 run_lib.py:140] step: 0, training_loss: 1.00246e+00
+I1020 18:35:24.087049 139931231245440 run_lib.py:153] step: 0, eval_loss: 9.99960e-01
+I1020 18:35:45.749435 139931231245440 run_lib.py:140] step: 50, training_loss: 9.93603e-01
+I1020 18:36:07.570262 139931231245440 run_lib.py:140] step: 100, training_loss: 9.59891e-01
+I1020 18:36:07.748551 139931231245440 run_lib.py:153] step: 100, eval_loss: 9.64947e-01
+I1020 18:36:29.684961 139931231245440 run_lib.py:140] step: 150, training_loss: 8.87315e-01
+I1020 18:36:51.736668 139931231245440 run_lib.py:140] step: 200, training_loss: 8.09340e-01
+I1020 18:36:51.915026 139931231245440 run_lib.py:153] step: 200, eval_loss: 8.38413e-01
+I1020 18:37:14.011345 139931231245440 run_lib.py:140] step: 250, training_loss: 7.06952e-01
+I1020 18:37:36.158380 139931231245440 run_lib.py:140] step: 300, training_loss: 6.04356e-01
+I1020 18:37:36.335376 139931231245440 run_lib.py:153] step: 300, eval_loss: 6.56284e-01
+I1020 18:37:58.512651 139931231245440 run_lib.py:140] step: 350, training_loss: 4.81265e-01
+I1020 18:38:20.684373 139931231245440 run_lib.py:140] step: 400, training_loss: 3.77328e-01
+I1020 18:38:20.861175 139931231245440 run_lib.py:153] step: 400, eval_loss: 4.51663e-01
+I1020 18:38:43.038031 139931231245440 run_lib.py:140] step: 450, training_loss: 2.63757e-01
+I1020 18:39:05.202909 139931231245440 run_lib.py:140] step: 500, training_loss: 1.67756e-01
+I1020 18:39:05.380240 139931231245440 run_lib.py:153] step: 500, eval_loss: 2.49297e-01
+I1020 18:39:27.551043 139931231245440 run_lib.py:140] step: 550, training_loss: 1.04457e-01
+I1020 18:39:49.717475 139931231245440 run_lib.py:140] step: 600, training_loss: 5.66077e-02
+I1020 18:39:49.894789 139931231245440 run_lib.py:153] step: 600, eval_loss: 1.11996e-01
+I1020 18:40:12.083765 139931231245440 run_lib.py:140] step: 650, training_loss: 4.39186e-02
+I1020 18:40:34.254370 139931231245440 run_lib.py:140] step: 700, training_loss: 3.48132e-02
+I1020 18:40:34.434322 139931231245440 run_lib.py:153] step: 700, eval_loss: 7.30579e-02
+I1020 18:40:56.629190 139931231245440 run_lib.py:140] step: 750, training_loss: 3.49451e-02
+I1020 18:41:18.816581 139931231245440 run_lib.py:140] step: 800, training_loss: 5.83525e-02
+I1020 18:41:18.996765 139931231245440 run_lib.py:153] step: 800, eval_loss: 3.92309e-02
+I1020 18:41:41.212433 139931231245440 run_lib.py:140] step: 850, training_loss: 4.07244e-02
+I1020 18:42:03.420309 139931231245440 run_lib.py:140] step: 900, training_loss: 3.86038e-02
+I1020 18:42:03.599053 139931231245440 run_lib.py:153] step: 900, eval_loss: 4.05083e-02
+I1020 18:42:25.788943 139931231245440 run_lib.py:140] step: 950, training_loss: 3.46741e-02
+I1020 18:42:47.992008 139931231245440 run_lib.py:140] step: 1000, training_loss: 4.07956e-02
+I1020 18:42:48.171128 139931231245440 run_lib.py:153] step: 1000, eval_loss: 2.60942e-02
+I1020 18:43:10.374142 139931231245440 run_lib.py:140] step: 1050, training_loss: 4.12419e-02
+I1020 18:43:32.569348 139931231245440 run_lib.py:140] step: 1100, training_loss: 4.33397e-02
+I1020 18:43:32.747462 139931231245440 run_lib.py:153] step: 1100, eval_loss: 4.64180e-02
+I1020 18:43:54.960246 139931231245440 run_lib.py:140] step: 1150, training_loss: 3.98799e-02

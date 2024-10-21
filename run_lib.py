@@ -20,10 +20,8 @@ import gc
 import io
 import os
 import time
-
+import glob
 import numpy as np
-import tensorflow as tf
-import tensorflow_gan as tfgan
 import logging
 # Keep the import below for registering all model definitions
 from models import ddpm, ncsnv2, ncsnpp
@@ -41,6 +39,12 @@ from torch.utils import tensorboard
 from torchvision.utils import make_grid, save_image
 from utils import save_checkpoint, restore_checkpoint
 
+
+# NOTE: IMPORTANT!!! put import tensorflow after import torch will solve the 
+# cuda runtime error of random_device!!! T.T 
+import tensorflow as tf
+import tensorflow_gan as tfgan
+
 FLAGS = flags.FLAGS
 
 
@@ -55,11 +59,13 @@ def train(config, workdir):
 
   # Create directories for experimental logs
   sample_dir = os.path.join(workdir, "samples")
-  tf.io.gfile.makedirs(sample_dir)
+  os.makedirs(sample_dir, exist_ok=True)
 
   tb_dir = os.path.join(workdir, "tensorboard")
-  tf.io.gfile.makedirs(tb_dir)
+  os.makedirs(tb_dir, exist_ok=True)
   writer = tensorboard.SummaryWriter(tb_dir)
+  print("finished initializing tensorboard")
+
 
   # Initialize model.
   score_model = mutils.create_model(config)
@@ -67,12 +73,15 @@ def train(config, workdir):
   optimizer = losses.get_optimizer(config, score_model.parameters())
   state = dict(optimizer=optimizer, model=score_model, ema=ema, step=0)
 
+  print("finished creating score model")
+
+
   # Create checkpoints directory
   checkpoint_dir = os.path.join(workdir, "checkpoints")
   # Intermediate checkpoints to resume training after pre-emption in cloud environments
   checkpoint_meta_dir = os.path.join(workdir, "checkpoints-meta", "checkpoint.pth")
-  tf.io.gfile.makedirs(checkpoint_dir)
-  tf.io.gfile.makedirs(os.path.dirname(checkpoint_meta_dir))
+  os.makedirs(checkpoint_dir,exist_ok=True)
+  os.makedirs(os.path.dirname(checkpoint_meta_dir),exist_ok=True)
   # Resume training when intermediate checkpoints are detected
   state = restore_checkpoint(checkpoint_meta_dir, state, config.device)
   initial_step = int(state['step'])
@@ -159,15 +168,15 @@ def train(config, workdir):
         sample, n = sampling_fn(score_model)
         ema.restore(score_model.parameters())
         this_sample_dir = os.path.join(sample_dir, "iter_{}".format(step))
-        tf.io.gfile.makedirs(this_sample_dir)
+        os.makedirs(this_sample_dir,exist_ok=True)
         nrow = int(np.sqrt(sample.shape[0]))
         image_grid = make_grid(sample, nrow, padding=2)
         sample = np.clip(sample.permute(0, 2, 3, 1).cpu().numpy() * 255, 0, 255).astype(np.uint8)
-        with tf.io.gfile.GFile(
+        with os.GFile(
             os.path.join(this_sample_dir, "sample.np"), "wb") as fout:
           np.save(fout, sample)
 
-        with tf.io.gfile.GFile(
+        with os.GFile(
             os.path.join(this_sample_dir, "sample.png"), "wb") as fout:
           save_image(image_grid, fout)
 
@@ -185,7 +194,7 @@ def evaluate(config,
   """
   # Create directory to eval_folder
   eval_dir = os.path.join(workdir, eval_folder)
-  tf.io.gfile.makedirs(eval_dir)
+  os.makedirs(eval_dir,exist_ok=True)
 
   # Build data pipeline
   train_ds, eval_ds, _ = datasets.get_dataset(config,
@@ -264,7 +273,7 @@ def evaluate(config,
     # Wait if the target checkpoint doesn't exist yet
     waiting_message_printed = False
     ckpt_filename = os.path.join(checkpoint_dir, "checkpoint_{}.pth".format(ckpt))
-    while not tf.io.gfile.exists(ckpt_filename):
+    while not os.exists(ckpt_filename):
       if not waiting_message_printed:
         logging.warning("Waiting for the arrival of checkpoint_%d" % (ckpt,))
         waiting_message_printed = True
@@ -297,7 +306,7 @@ def evaluate(config,
 
       # Save loss values to disk or Google Cloud Storage
       all_losses = np.asarray(all_losses)
-      with tf.io.gfile.GFile(os.path.join(eval_dir, f"ckpt_{ckpt}_loss.npz"), "wb") as fout:
+      with os.GFile(os.path.join(eval_dir, f"ckpt_{ckpt}_loss.npz"), "wb") as fout:
         io_buffer = io.BytesIO()
         np.savez_compressed(io_buffer, all_losses=all_losses, mean_loss=all_losses.mean())
         fout.write(io_buffer.getvalue())
@@ -319,7 +328,7 @@ def evaluate(config,
             "ckpt: %d, repeat: %d, batch: %d, mean bpd: %6f" % (ckpt, repeat, batch_id, np.mean(np.asarray(bpds))))
           bpd_round_id = batch_id + len(ds_bpd) * repeat
           # Save bits/dim to disk or Google Cloud Storage
-          with tf.io.gfile.GFile(os.path.join(eval_dir,
+          with os.GFile(os.path.join(eval_dir,
                                               f"{config.eval.bpd_dataset}_ckpt_{ckpt}_bpd_{bpd_round_id}.npz"),
                                  "wb") as fout:
             io_buffer = io.BytesIO()
@@ -335,13 +344,13 @@ def evaluate(config,
         # Directory to save samples. Different for each host to avoid writing conflicts
         this_sample_dir = os.path.join(
           eval_dir, f"ckpt_{ckpt}")
-        tf.io.gfile.makedirs(this_sample_dir)
+        os.makedirs(this_sample_dir, exist_ok=True)
         samples, n = sampling_fn(score_model)
         samples = np.clip(samples.permute(0, 2, 3, 1).cpu().numpy() * 255., 0, 255).astype(np.uint8)
         samples = samples.reshape(
           (-1, config.data.image_size, config.data.image_size, config.data.num_channels))
         # Write samples to disk or Google Cloud Storage
-        with tf.io.gfile.GFile(
+        with os.GFile(
             os.path.join(this_sample_dir, f"samples_{r}.npz"), "wb") as fout:
           io_buffer = io.BytesIO()
           np.savez_compressed(io_buffer, samples=samples)
@@ -354,7 +363,7 @@ def evaluate(config,
         # Force garbage collection again before returning to JAX code
         gc.collect()
         # Save latent represents of the Inception network to disk or Google Cloud Storage
-        with tf.io.gfile.GFile(
+        with os.GFile(
             os.path.join(this_sample_dir, f"statistics_{r}.npz"), "wb") as fout:
           io_buffer = io.BytesIO()
           np.savez_compressed(
@@ -366,9 +375,9 @@ def evaluate(config,
       all_logits = []
       all_pools = []
       this_sample_dir = os.path.join(eval_dir, f"ckpt_{ckpt}")
-      stats = tf.io.gfile.glob(os.path.join(this_sample_dir, "statistics_*.npz"))
+      stats = os.glob(os.path.join(this_sample_dir, "statistics_*.npz"))
       for stat_file in stats:
-        with tf.io.gfile.GFile(stat_file, "rb") as fin:
+        with os.GFile(stat_file, "rb") as fin:
           stat = np.load(fin)
           if not inceptionv3:
             all_logits.append(stat["logits"])
@@ -401,7 +410,7 @@ def evaluate(config,
         "ckpt-%d --- inception_score: %.6e, FID: %.6e, KID: %.6e" % (
           ckpt, inception_score, fid, kid))
 
-      with tf.io.gfile.GFile(os.path.join(eval_dir, f"report_{ckpt}.npz"),
+      with os.GFile(os.path.join(eval_dir, f"report_{ckpt}.npz"),
                              "wb") as f:
         io_buffer = io.BytesIO()
         np.savez_compressed(io_buffer, IS=inception_score, fid=fid, kid=kid)

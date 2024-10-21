@@ -1,0 +1,54 @@
+WARNING - utils.py - 2024-10-20 18:35:20,448 - No checkpoint found at ./checkpoints-meta/checkpoint.pth. Returned the same state as input
+INFO - xla_bridge.py - 2024-10-20 18:35:20,461 - Unable to initialize backend 'cuda': 
+INFO - xla_bridge.py - 2024-10-20 18:35:20,461 - Unable to initialize backend 'rocm': module 'jaxlib.xla_extension' has no attribute 'GpuAllocatorConfig'
+INFO - xla_bridge.py - 2024-10-20 18:35:20,462 - Unable to initialize backend 'tpu': INTERNAL: Failed to open libtpu.so: libtpu.so: cannot open shared object file: No such file or directory
+WARNING - xla_bridge.py - 2024-10-20 18:35:20,463 - An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+INFO - dataset_info.py - 2024-10-20 18:35:21,421 - Load dataset info from /home/fredxu/tensorflow_datasets/cifar10/3.0.2
+INFO - dataset_info.py - 2024-10-20 18:35:21,428 - For 'cifar10/3.0.2': fields info.[splits, supervised_keys, module_name] differ on disk and in the code. Keeping the one from code.
+WARNING - options.py - 2024-10-20 18:35:21,429 - options.experimental_threading is deprecated. Use options.threading instead.
+WARNING - options.py - 2024-10-20 18:35:21,429 - options.experimental_threading is deprecated. Use options.threading instead.
+INFO - dataset_builder.py - 2024-10-20 18:35:21,429 - Reusing dataset cifar10 (/home/fredxu/tensorflow_datasets/cifar10/3.0.2)
+INFO - reader.py - 2024-10-20 18:35:21,431 - Creating a tf.data.Dataset reading 1 files located in folders: /home/fredxu/tensorflow_datasets/cifar10/3.0.2.
+INFO - logging_logger.py - 2024-10-20 18:35:21,564 - Constructing tf.data.Dataset cifar10 for split train, from /home/fredxu/tensorflow_datasets/cifar10/3.0.2
+WARNING - options.py - 2024-10-20 18:35:21,713 - options.experimental_threading is deprecated. Use options.threading instead.
+WARNING - options.py - 2024-10-20 18:35:21,713 - options.experimental_threading is deprecated. Use options.threading instead.
+INFO - dataset_builder.py - 2024-10-20 18:35:21,713 - Reusing dataset cifar10 (/home/fredxu/tensorflow_datasets/cifar10/3.0.2)
+INFO - reader.py - 2024-10-20 18:35:21,714 - Creating a tf.data.Dataset reading 1 files located in folders: /home/fredxu/tensorflow_datasets/cifar10/3.0.2.
+INFO - logging_logger.py - 2024-10-20 18:35:21,755 - Constructing tf.data.Dataset cifar10 for split test, from /home/fredxu/tensorflow_datasets/cifar10/3.0.2
+INFO - run_lib.py - 2024-10-20 18:35:22,099 - Starting training loop at step 0.
+INFO - run_lib.py - 2024-10-20 18:35:23,498 - step: 0, training_loss: 1.00246e+00
+INFO - run_lib.py - 2024-10-20 18:35:24,087 - step: 0, eval_loss: 9.99960e-01
+INFO - run_lib.py - 2024-10-20 18:35:45,749 - step: 50, training_loss: 9.93603e-01
+INFO - run_lib.py - 2024-10-20 18:36:07,570 - step: 100, training_loss: 9.59891e-01
+INFO - run_lib.py - 2024-10-20 18:36:07,748 - step: 100, eval_loss: 9.64947e-01
+INFO - run_lib.py - 2024-10-20 18:36:29,684 - step: 150, training_loss: 8.87315e-01
+INFO - run_lib.py - 2024-10-20 18:36:51,736 - step: 200, training_loss: 8.09340e-01
+INFO - run_lib.py - 2024-10-20 18:36:51,915 - step: 200, eval_loss: 8.38413e-01
+INFO - run_lib.py - 2024-10-20 18:37:14,011 - step: 250, training_loss: 7.06952e-01
+INFO - run_lib.py - 2024-10-20 18:37:36,158 - step: 300, training_loss: 6.04356e-01
+INFO - run_lib.py - 2024-10-20 18:37:36,335 - step: 300, eval_loss: 6.56284e-01
+INFO - run_lib.py - 2024-10-20 18:37:58,512 - step: 350, training_loss: 4.81265e-01
+INFO - run_lib.py - 2024-10-20 18:38:20,684 - step: 400, training_loss: 3.77328e-01
+INFO - run_lib.py - 2024-10-20 18:38:20,861 - step: 400, eval_loss: 4.51663e-01
+INFO - run_lib.py - 2024-10-20 18:38:43,038 - step: 450, training_loss: 2.63757e-01
+INFO - run_lib.py - 2024-10-20 18:39:05,202 - step: 500, training_loss: 1.67756e-01
+INFO - run_lib.py - 2024-10-20 18:39:05,380 - step: 500, eval_loss: 2.49297e-01
+INFO - run_lib.py - 2024-10-20 18:39:27,551 - step: 550, training_loss: 1.04457e-01
+INFO - run_lib.py - 2024-10-20 18:39:49,717 - step: 600, training_loss: 5.66077e-02
+INFO - run_lib.py - 2024-10-20 18:39:49,894 - step: 600, eval_loss: 1.11996e-01
+INFO - run_lib.py - 2024-10-20 18:40:12,083 - step: 650, training_loss: 4.39186e-02
+INFO - run_lib.py - 2024-10-20 18:40:34,254 - step: 700, training_loss: 3.48132e-02
+INFO - run_lib.py - 2024-10-20 18:40:34,434 - step: 700, eval_loss: 7.30579e-02
+INFO - run_lib.py - 2024-10-20 18:40:56,629 - step: 750, training_loss: 3.49451e-02
+INFO - run_lib.py - 2024-10-20 18:41:18,816 - step: 800, training_loss: 5.83525e-02
+INFO - run_lib.py - 2024-10-20 18:41:18,996 - step: 800, eval_loss: 3.92309e-02
+INFO - run_lib.py - 2024-10-20 18:41:41,212 - step: 850, training_loss: 4.07244e-02
+INFO - run_lib.py - 2024-10-20 18:42:03,420 - step: 900, training_loss: 3.86038e-02
+INFO - run_lib.py - 2024-10-20 18:42:03,599 - step: 900, eval_loss: 4.05083e-02
+INFO - run_lib.py - 2024-10-20 18:42:25,788 - step: 950, training_loss: 3.46741e-02
+INFO - run_lib.py - 2024-10-20 18:42:47,992 - step: 1000, training_loss: 4.07956e-02
+INFO - run_lib.py - 2024-10-20 18:42:48,171 - step: 1000, eval_loss: 2.60942e-02
+INFO - run_lib.py - 2024-10-20 18:43:10,374 - step: 1050, training_loss: 4.12419e-02
+INFO - run_lib.py - 2024-10-20 18:43:32,569 - step: 1100, training_loss: 4.33397e-02
+INFO - run_lib.py - 2024-10-20 18:43:32,747 - step: 1100, eval_loss: 4.64180e-02
+INFO - run_lib.py - 2024-10-20 18:43:54,960 - step: 1150, training_loss: 3.98799e-02
