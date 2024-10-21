@@ -58,3 +58,8 @@ INFO - run_lib.py - 2024-10-20 18:44:39,561 - step: 1250, training_loss: 3.67861
 INFO - run_lib.py - 2024-10-20 18:45:01,781 - step: 1300, training_loss: 3.52216e-02
 INFO - run_lib.py - 2024-10-20 18:45:01,961 - step: 1300, eval_loss: 3.27240e-02
 INFO - run_lib.py - 2024-10-20 18:45:24,164 - step: 1350, training_loss: 3.94942e-02
+INFO - run_lib.py - 2024-10-20 18:45:46,368 - step: 1400, training_loss: 4.63570e-02
+INFO - run_lib.py - 2024-10-20 18:45:46,549 - step: 1400, eval_loss: 3.31346e-02
+INFO - run_lib.py - 2024-10-20 18:46:08,753 - step: 1450, training_loss: 3.74932e-02
+INFO - run_lib.py - 2024-10-20 18:46:30,959 - step: 1500, training_loss: 4.18467e-02
+INFO - run_lib.py - 2024-10-20 18:46:31,138 - step: 1500, eval_loss: 2.95438e-02
