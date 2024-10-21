@@ -1,6 +1,9 @@
 # Compiled python modules.
 *.pyc
 
+checkpoints*/
+checkpoints/
+
 # Byte-compiled
 _pycache__/
 .cache/
@@ -20,6 +23,7 @@ dist/
 # Other
 *.DS_Store
 
+
 *tensorboard*
 *txt*
-tensorboard/
+tensorboard/*

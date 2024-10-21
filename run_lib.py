@@ -180,7 +180,7 @@ def train(config, workdir):
         sample, n = sampling_fn(score_model)
 
         if config.training.sde.lower() == "loggbm":
-          samples = torch.exp(samples) + 1e-6
+          sample = torch.exp(sample) + 1e-6
 
         ema.restore(score_model.parameters())
         this_sample_dir = os.path.join(sample_dir, "iter_{}".format(step))
@@ -374,7 +374,7 @@ def evaluate(config,
 
         # inverse transform back if loggbm
         if config.training.sde.lower() == "loggbm":
-            sample = torch.exp(sample) - 1e-6
+            samples = torch.exp(samples) - 1e-6
 
         samples = np.clip(samples.permute(0, 2, 3, 1).cpu().numpy() * 255., 0, 255).astype(np.uint8)
         samples = samples.reshape(
