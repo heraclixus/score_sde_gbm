@@ -172,11 +172,11 @@ def train(config, workdir):
         nrow = int(np.sqrt(sample.shape[0]))
         image_grid = make_grid(sample, nrow, padding=2)
         sample = np.clip(sample.permute(0, 2, 3, 1).cpu().numpy() * 255, 0, 255).astype(np.uint8)
-        with os.GFile(
+        with open(
             os.path.join(this_sample_dir, "sample.np"), "wb") as fout:
           np.save(fout, sample)
 
-        with os.GFile(
+        with open(
             os.path.join(this_sample_dir, "sample.png"), "wb") as fout:
           save_image(image_grid, fout)
 
@@ -306,7 +306,7 @@ def evaluate(config,
 
       # Save loss values to disk or Google Cloud Storage
       all_losses = np.asarray(all_losses)
-      with os.GFile(os.path.join(eval_dir, f"ckpt_{ckpt}_loss.npz"), "wb") as fout:
+      with open(os.path.join(eval_dir, f"ckpt_{ckpt}_loss.npz"), "wb") as fout:
         io_buffer = io.BytesIO()
         np.savez_compressed(io_buffer, all_losses=all_losses, mean_loss=all_losses.mean())
         fout.write(io_buffer.getvalue())
@@ -328,7 +328,7 @@ def evaluate(config,
             "ckpt: %d, repeat: %d, batch: %d, mean bpd: %6f" % (ckpt, repeat, batch_id, np.mean(np.asarray(bpds))))
           bpd_round_id = batch_id + len(ds_bpd) * repeat
           # Save bits/dim to disk or Google Cloud Storage
-          with os.GFile(os.path.join(eval_dir,
+          with open(os.path.join(eval_dir,
                                               f"{config.eval.bpd_dataset}_ckpt_{ckpt}_bpd_{bpd_round_id}.npz"),
                                  "wb") as fout:
             io_buffer = io.BytesIO()
@@ -350,7 +350,7 @@ def evaluate(config,
         samples = samples.reshape(
           (-1, config.data.image_size, config.data.image_size, config.data.num_channels))
         # Write samples to disk or Google Cloud Storage
-        with os.GFile(
+        with open(
             os.path.join(this_sample_dir, f"samples_{r}.npz"), "wb") as fout:
           io_buffer = io.BytesIO()
           np.savez_compressed(io_buffer, samples=samples)
@@ -363,7 +363,7 @@ def evaluate(config,
         # Force garbage collection again before returning to JAX code
         gc.collect()
         # Save latent represents of the Inception network to disk or Google Cloud Storage
-        with os.GFile(
+        with open(
             os.path.join(this_sample_dir, f"statistics_{r}.npz"), "wb") as fout:
           io_buffer = io.BytesIO()
           np.savez_compressed(
@@ -377,7 +377,7 @@ def evaluate(config,
       this_sample_dir = os.path.join(eval_dir, f"ckpt_{ckpt}")
       stats = os.glob(os.path.join(this_sample_dir, "statistics_*.npz"))
       for stat_file in stats:
-        with os.GFile(stat_file, "rb") as fin:
+        with open(stat_file, "rb") as fin:
           stat = np.load(fin)
           if not inceptionv3:
             all_logits.append(stat["logits"])
@@ -410,7 +410,7 @@ def evaluate(config,
         "ckpt-%d --- inception_score: %.6e, FID: %.6e, KID: %.6e" % (
           ckpt, inception_score, fid, kid))
 
-      with os.GFile(os.path.join(eval_dir, f"report_{ckpt}.npz"),
+      with open(os.path.join(eval_dir, f"report_{ckpt}.npz"),
                              "wb") as f:
         io_buffer = io.BytesIO()
         np.savez_compressed(io_buffer, IS=inception_score, fid=fid, kid=kid)
