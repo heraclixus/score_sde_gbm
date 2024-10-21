@@ -252,3 +252,60 @@ class VESDE(SDE):
     f = torch.zeros_like(x)
     G = torch.sqrt(sigma ** 2 - adjacent_sigma ** 2)
     return f, G
+
+
+
+
+# use the sde after log transform.
+# NOTE: this SDE after logtransformation looks like VPSDE. can we do better? 
+# implementation of the (log) geometric brownian motion
+# TODO: use smaller value of N for logGBM and see the impact. 
+class logGBM(SDE):
+  def __init__(self, beta_min=0.1, beta_max=20, N=1000):
+    self.beta_0 = beta_min
+    self.beta_1 = beta_max
+    self.N = N
+    self.discrete_betas = torch.linspace(beta_min / N, beta_max / N, N)
+    self.alphas = 1. - self.discrete_betas
+    self.alphas_cumprod = torch.cumprod(self.alphas, dim=0)
+    self.sqrt_alphas_cumprod = torch.sqrt(self.alphas_cumprod)
+    self.sqrt_1m_alphas_cumprod = torch.sqrt(1. - self.alphas_cumprod)
+
+  @property
+  def T(self):
+    return 1
+
+  # dx_t = beta_t x_t dt + sqrt(beta_t) x dw_t 
+  # dy_t = -beta_t * 1 dt + sqrt(beta_t) dw_t 
+  def sde(self, x, t):
+    beta_t = self.beta_0 + t * (self.beta_1 - self.beta_0)
+    drift = - beta_t[:, None, None, None] * torch.ones_like(x)
+    diffusion = torch.sqrt(beta_t)
+    return drift, diffusion
+
+
+  def marginal_prob(self, x, t):
+    std = self.beta_0 * t - (self.beta_1 - self.beta_0) * t ** 2
+    mean = x - std[:, None, None, None] * torch.ones_like(x) 
+    return mean, std
+
+  def prior_sampling(self, shape):
+    return torch.randn(*shape)    
+
+  
+  def prior_logp(self, z):
+    shape = z.shape
+    N = np.prod(shape[1:])
+    logps = -N / 2. * np.log(2 * np.pi) - torch.sum(z ** 2, dim=(1, 2, 3)) / 2.
+    return logps
+
+
+  def discretize(self, x, t):
+    """DDPM discretization."""
+    timestep = (t * (self.N - 1) / self.T).long()
+    beta = self.discrete_betas.to(x.device)[timestep]
+    alpha = self.alphas.to(x.device)[timestep]
+    sqrt_beta = torch.sqrt(beta)
+    f = torch.sqrt(alpha)[:, None, None, None] * x - x
+    G = sqrt_beta
+    return f, G

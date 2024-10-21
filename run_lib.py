@@ -105,6 +105,9 @@ def train(config, workdir):
   elif config.training.sde.lower() == 'vesde':
     sde = sde_lib.VESDE(sigma_min=config.model.sigma_min, sigma_max=config.model.sigma_max, N=config.model.num_scales)
     sampling_eps = 1e-5
+  elif config.training.sde.lower() == "loggbm":
+    sde = sde_lib.logGBM(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
+    sampling_eps = 1e-3
   else:
     raise NotImplementedError(f"SDE {config.training.sde} unknown.")
 
@@ -136,6 +139,11 @@ def train(config, workdir):
     batch = torch.from_numpy(next(train_iter)['image']._numpy()).to(config.device).float()
     batch = batch.permute(0, 3, 1, 2)
     batch = scaler(batch)
+
+
+    if config.training.sde.lower() == "loggbm":
+      batch = torch.log(batch + 1e-6)
+
     # Execute one training step
     loss = train_step_fn(state, batch)
     if step % config.training.log_freq == 0:
@@ -151,6 +159,10 @@ def train(config, workdir):
       eval_batch = torch.from_numpy(next(eval_iter)['image']._numpy()).to(config.device).float()
       eval_batch = eval_batch.permute(0, 3, 1, 2)
       eval_batch = scaler(eval_batch)
+
+      if config.training.sde.lower() == "loggbm":
+            eval_batch = torch.log(eval_batch+1e-6)
+
       eval_loss = eval_step_fn(state, eval_batch)
       logging.info("step: %d, eval_loss: %.5e" % (step, eval_loss.item()))
       writer.add_scalar("eval_loss", eval_loss.item(), step)
@@ -166,6 +178,10 @@ def train(config, workdir):
         ema.store(score_model.parameters())
         ema.copy_to(score_model.parameters())
         sample, n = sampling_fn(score_model)
+
+        if config.training.sde.lower() == "loggbm":
+          samples = torch.exp(samples) + 1e-6
+
         ema.restore(score_model.parameters())
         this_sample_dir = os.path.join(sample_dir, "iter_{}".format(step))
         os.makedirs(this_sample_dir,exist_ok=True)
@@ -223,6 +239,9 @@ def evaluate(config,
   elif config.training.sde.lower() == 'vesde':
     sde = sde_lib.VESDE(sigma_min=config.model.sigma_min, sigma_max=config.model.sigma_max, N=config.model.num_scales)
     sampling_eps = 1e-5
+  elif config.training.sde.lower() == "loggbm":
+    sde = sde_lib.logGBM(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
+    sampling_eps = 1e-3
   else:
     raise NotImplementedError(f"SDE {config.training.sde} unknown.")
 
@@ -299,6 +318,10 @@ def evaluate(config,
         eval_batch = torch.from_numpy(batch['image']._numpy()).to(config.device).float()
         eval_batch = eval_batch.permute(0, 3, 1, 2)
         eval_batch = scaler(eval_batch)
+
+        if config.training.sde.lower() == "loggbm":
+          eval_batch = torch.log(eval_batch + 1e-6)
+
         eval_loss = eval_step(state, eval_batch)
         all_losses.append(eval_loss.item())
         if (i + 1) % 1000 == 0:
@@ -321,6 +344,8 @@ def evaluate(config,
           eval_batch = torch.from_numpy(batch['image']._numpy()).to(config.device).float()
           eval_batch = eval_batch.permute(0, 3, 1, 2)
           eval_batch = scaler(eval_batch)
+          if config.training.sde.lower() == "loggbm":
+            eval_batch = torch.log(eval_batch + 1e-6)
           bpd = likelihood_fn(score_model, eval_batch)[0]
           bpd = bpd.detach().cpu().numpy().reshape(-1)
           bpds.extend(bpd)
@@ -346,6 +371,11 @@ def evaluate(config,
           eval_dir, f"ckpt_{ckpt}")
         os.makedirs(this_sample_dir, exist_ok=True)
         samples, n = sampling_fn(score_model)
+
+        # inverse transform back if loggbm
+        if config.training.sde.lower() == "loggbm":
+            sample = torch.exp(sample) - 1e-6
+
         samples = np.clip(samples.permute(0, 2, 3, 1).cpu().numpy() * 255., 0, 255).astype(np.uint8)
         samples = samples.reshape(
           (-1, config.data.image_size, config.data.image_size, config.data.num_channels))

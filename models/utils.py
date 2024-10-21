@@ -140,7 +140,7 @@ def get_score_fn(sde, model, train=False, continuous=False):
   """
   model_fn = get_model_fn(model, train=train)
 
-  if isinstance(sde, sde_lib.VPSDE) or isinstance(sde, sde_lib.subVPSDE):
+  if isinstance(sde, sde_lib.VPSDE) or isinstance(sde, sde_lib.subVPSDE) or isinstance(sde, sde_lib.logGBM):
     def score_fn(x, t):
       # Scale neural network output by standard deviation and flip sign
       if continuous or isinstance(sde, sde_lib.subVPSDE):
