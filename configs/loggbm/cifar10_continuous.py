@@ -18,15 +18,17 @@
 
 from configs.default_cifar10_configs import get_default_configs
 
-
 def get_config():
   config = get_default_configs()
-
   # training
   training = config.training
   training.sde = 'loggbm'
   training.continuous = True
   training.reduce_mean = True
+  training.n_iters = 300000
+  training.snapshot_freq = 20000
+  training.log_freq = 500
+  training.eval_freq = 500
 
   # sampling
   sampling = config.sampling
@@ -51,5 +53,14 @@ def get_config():
   model.attn_resolutions = (16,)
   model.resamp_with_conv = True
   model.conditional = True
+  model.num_scales = 500  # TODO: step N
+  model.beta_min = 0.0
+  model.beta_max = 30    # TODO: max beta value, could be smaller? 
+ 
+
+  # optim
+  optim = config.optim
+  optim.lr = 1e-4
+  optim.beta1 = 0.9
 
   return config

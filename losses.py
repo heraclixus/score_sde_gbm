@@ -20,7 +20,7 @@ import torch
 import torch.optim as optim
 import numpy as np
 from models import utils as mutils
-from sde_lib import VESDE, VPSDE
+from sde_lib import VESDE, VPSDE, logGBM
 
 
 def get_optimizer(config, params):
@@ -92,7 +92,11 @@ def get_sde_loss_fn(sde, train, reduce_mean=True, continuous=True, likelihood_we
       losses = reduce_op(losses.reshape(losses.shape[0], -1), dim=-1)
     else:
       g2 = sde.sde(torch.zeros_like(batch), t)[1] ** 2
-      losses = torch.square(score + z / std[:, None, None, None])
+
+      if isinstance(sde, logGBM): # NOTE: score uses sqrt of diffusion
+        losses = torch.square(score + z / torch.sqrt(std[:, None, None, None]))
+      else:
+        losses = torch.square(score + z / std[:, None, None, None])
       losses = reduce_op(losses.reshape(losses.shape[0], -1), dim=-1) * g2
 
     loss = torch.mean(losses)

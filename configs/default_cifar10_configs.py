@@ -7,9 +7,10 @@ def get_default_configs():
   # training
   config.training = training = ml_collections.ConfigDict()
   config.training.batch_size = 128
+  
   training.n_iters = 1300001
   training.snapshot_freq = 50000
-  training.log_freq = 50
+  training.log_freq = 10
   training.eval_freq = 100
   ## store additional checkpoints for preemption in cloud computing environments
   training.snapshot_freq_for_preemption = 10000
@@ -67,6 +68,6 @@ def get_default_configs():
   optim.grad_clip = 1.
 
   config.seed = 42
-  config.device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+  config.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
   return config

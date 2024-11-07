@@ -27,3 +27,8 @@ dist/
 *tensorboard*
 *txt*
 tensorboard/*
+
+loggbm_output*
+ddpm_output_debug*
+samples
+*.txt

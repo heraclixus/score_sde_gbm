@@ -387,7 +387,10 @@ def get_pc_sampler(sde, shape, predictor, corrector, inverse_scaler, snr,
                                           snr=snr,
                                           n_steps=n_steps)
 
-  def pc_sampler(model):
+
+  # TODO: the pc sampler samples from a prior but the prior depends on data 
+  # if the model is loggbm 
+  def pc_sampler(model, x0=None):
     """ The PC sampler funciton.
 
     Args:
@@ -396,8 +399,11 @@ def get_pc_sampler(sde, shape, predictor, corrector, inverse_scaler, snr,
       Samples, number of function evaluations.
     """
     with torch.no_grad():
-      # Initial sample
-      x = sde.prior_sampling(shape).to(device)
+      # NOTE: Initial sample for loggbm 
+      if x0 != None and isinstance(sde, sde_lib.logGBM):
+        x = sde.prior_sampling(x0).to(device)
+      else:
+        x = sde.prior_sampling(shape).to(device)
       timesteps = torch.linspace(sde.T, eps, sde.N, device=device)
 
       for i in range(sde.N):

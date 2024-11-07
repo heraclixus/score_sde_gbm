@@ -261,7 +261,7 @@ class VESDE(SDE):
 # implementation of the (log) geometric brownian motion
 # TODO: use smaller value of N for logGBM and see the impact. 
 class logGBM(SDE):
-  def __init__(self, beta_min=0.1, beta_max=20, N=1000):
+  def __init__(self, beta_min=0.1, beta_max=20, N=200):
     self.beta_0 = beta_min
     self.beta_1 = beta_max
     self.N = N
@@ -271,6 +271,23 @@ class logGBM(SDE):
     self.sqrt_alphas_cumprod = torch.sqrt(self.alphas_cumprod)
     self.sqrt_1m_alphas_cumprod = torch.sqrt(1. - self.alphas_cumprod)
 
+    self.beta = torch.linspace(self.beta_0, self.beta_1, self.N+1)
+    self.alpha = torch.zeros_like(self.beta)
+    self.alpha[1:] = torch.cumsum((self.beta[:-1]+self.beta[1:])*0.5, dim=0)
+    self.alpha = self.alpha[1:]
+    self.beta = self.beta[1:]
+    self.beta_integral = self.alpha[-1]
+
+    print(f"beta_0 = {self.beta_0}")
+    print(f"beta_1 = {self.beta_1}")
+    print(f"N = {N}")
+    print(f"alphas = {self.alphas}")
+    print(f"alphas_cumprod = {self.alphas_cumprod}")
+    print(f"alpha = {self.alpha}")
+    print(f"beta = {self.beta}")
+    print(f"beta_integral = {self.beta_integral}")
+
+
   @property
   def T(self):
     return 1
@@ -279,20 +296,35 @@ class logGBM(SDE):
   # dy_t = -beta_t * 1 dt + sqrt(beta_t) dw_t 
   def sde(self, x, t):
     beta_t = self.beta_0 + t * (self.beta_1 - self.beta_0)
-    drift = - beta_t[:, None, None, None] * torch.ones_like(x)
+    drift = -beta_t[:, None, None, None] * torch.ones_like(x)
     diffusion = torch.sqrt(beta_t)
     return drift, diffusion
 
 
   def marginal_prob(self, x, t):
+    # integral of beta
+    # std = torch.Size([128])
+    # mean = torch.Size([128, 3, 32, 32]) 
     std = self.beta_0 * t - (self.beta_1 - self.beta_0) * t ** 2
     mean = x - std[:, None, None, None] * torch.ones_like(x) 
     return mean, std
 
-  def prior_sampling(self, shape):
-    return torch.randn(*shape)    
 
-  
+  # this prior is data dependent as well
+  def prior_sampling(self, x0):
+    batch_size = x0.shape[0]
+    x_flat = x0.reshape(batch_size, -1)
+    self.bar_mu = torch.mean(x_flat, dim=0)
+    x_centered = x_flat - self.bar_mu
+    self.bar_sigma = (x_centered.t() @ x_centered) / batch_size
+    self.mu_hat = self.bar_mu - self.beta_integral * torch.ones_like(self.bar_mu)
+    self.sigma_hat = self.bar_sigma + self.beta_integral * torch.eye(x_flat.shape[1]).to(x0.device)  
+    mvn_distribution = torch.distributions.MultivariateNormal(self.mu_hat, covariance_matrix=self.sigma_hat)
+    samples = mvn_distribution.sample((batch_size,))
+    return samples.view(x0.shape)
+
+
+  # NOTE: this is not used
   def prior_logp(self, z):
     shape = z.shape
     N = np.prod(shape[1:])
@@ -300,6 +332,7 @@ class logGBM(SDE):
     return logps
 
 
+  # NOTE: this is not used
   def discretize(self, x, t):
     """DDPM discretization."""
     timestep = (t * (self.N - 1) / self.T).long()

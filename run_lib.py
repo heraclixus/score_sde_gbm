@@ -20,6 +20,7 @@ import gc
 import io
 import os
 import time
+import math
 import glob
 import numpy as np
 import logging
@@ -46,6 +47,14 @@ import tensorflow as tf
 import tensorflow_gan as tfgan
 
 FLAGS = flags.FLAGS
+
+
+# log and exp transform for loggbm
+def log_transform(x):
+  return torch.log1p(x )
+
+def exp_transform(x):
+  return (torch.exp(x) - 1) 
 
 
 def train(config, workdir):
@@ -107,7 +116,7 @@ def train(config, workdir):
     sampling_eps = 1e-5
   elif config.training.sde.lower() == "loggbm":
     sde = sde_lib.logGBM(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
-    sampling_eps = 1e-3
+    sampling_eps = 1e-5
   else:
     raise NotImplementedError(f"SDE {config.training.sde} unknown.")
 
@@ -142,7 +151,7 @@ def train(config, workdir):
 
 
     if config.training.sde.lower() == "loggbm":
-      batch = torch.log(batch + 1e-6)
+      batch = log_transform(batch)
 
     # Execute one training step
     loss = train_step_fn(state, batch)
@@ -161,7 +170,7 @@ def train(config, workdir):
       eval_batch = scaler(eval_batch)
 
       if config.training.sde.lower() == "loggbm":
-            eval_batch = torch.log(eval_batch+1e-6)
+        eval_batch = log_transform(eval_batch)
 
       eval_loss = eval_step_fn(state, eval_batch)
       logging.info("step: %d, eval_loss: %.5e" % (step, eval_loss.item()))
@@ -177,10 +186,12 @@ def train(config, workdir):
       if config.training.snapshot_sampling:
         ema.store(score_model.parameters())
         ema.copy_to(score_model.parameters())
-        sample, n = sampling_fn(score_model)
 
         if config.training.sde.lower() == "loggbm":
-          sample = torch.exp(sample) + 1e-6
+          sample, n = sampling_fn(score_model, eval_batch)
+          sample = exp_transform(sample)
+        else:
+          sample, n = sampling_fn(score_model)
 
         ema.restore(score_model.parameters())
         this_sample_dir = os.path.join(sample_dir, "iter_{}".format(step))
@@ -320,7 +331,7 @@ def evaluate(config,
         eval_batch = scaler(eval_batch)
 
         if config.training.sde.lower() == "loggbm":
-          eval_batch = torch.log(eval_batch + 1e-6)
+          eval_batch = log_transform(eval_batch)
 
         eval_loss = eval_step(state, eval_batch)
         all_losses.append(eval_loss.item())
@@ -345,7 +356,7 @@ def evaluate(config,
           eval_batch = eval_batch.permute(0, 3, 1, 2)
           eval_batch = scaler(eval_batch)
           if config.training.sde.lower() == "loggbm":
-            eval_batch = torch.log(eval_batch + 1e-6)
+            eval_batch = log_transform(eval_batch)
           bpd = likelihood_fn(score_model, eval_batch)[0]
           bpd = bpd.detach().cpu().numpy().reshape(-1)
           bpds.extend(bpd)
@@ -370,11 +381,12 @@ def evaluate(config,
         this_sample_dir = os.path.join(
           eval_dir, f"ckpt_{ckpt}")
         os.makedirs(this_sample_dir, exist_ok=True)
-        samples, n = sampling_fn(score_model)
 
-        # inverse transform back if loggbm
         if config.training.sde.lower() == "loggbm":
-            samples = torch.exp(samples) - 1e-6
+          samples, _ = sampling_fn(score_model, eval_batch, sampling_eps)
+          samples = exp_transform(samples)
+        else:
+          samples, n = sampling_fn(score_model)
 
         samples = np.clip(samples.permute(0, 2, 3, 1).cpu().numpy() * 255., 0, 255).astype(np.uint8)
         samples = samples.reshape(
